@@ -1,0 +1,1553 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap");
+
+:root {
+  --cream: #f4ede1;
+  --cream-light: #fbf8f2;
+  --cream-dark: #e7dccb;
+
+  --brown: #4b3028;
+  --brown-dark: #33231e;
+
+  --green: #243b2d;
+  --green-dark: #18291f;
+  --green-light: #405947;
+
+  --terracotta: #a95d49;
+
+  --gold: #b28a4d;
+  --gold-light: #d1b477;
+
+  --white: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--brown);
+  font-family: "Montserrat", sans-serif;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.site {
+  width: 100%;
+  overflow: hidden;
+}
+
+
+/* =====================================================
+   CAPA
+===================================================== */
+
+.hero {
+  min-height: 100vh;
+  padding: 22px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #fcf8f0 0%,
+      var(--cream) 62%,
+      #e8dccb 100%
+    );
+}
+
+.hero-frame {
+  width: min(1180px, 100%);
+  min-height: calc(100vh - 44px);
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(178, 138, 77, 0.7);
+
+  background: rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 30px 90px rgba(75, 48, 40, 0.08);
+}
+
+.hero-frame::before {
+  content: "";
+
+  position: absolute;
+  inset: 13px;
+
+  border: 1px solid rgba(75, 48, 40, 0.16);
+
+  pointer-events: none;
+}
+
+.hero-frame::after {
+  content: "";
+
+  position: absolute;
+  inset: 21px;
+
+  border: 1px solid rgba(178, 138, 77, 0.28);
+
+  pointer-events: none;
+}
+
+.hero-inner {
+  width: min(850px, 90%);
+
+  position: relative;
+  z-index: 5;
+
+  text-align: center;
+
+  padding: 65px 20px;
+}
+
+
+/* decoração */
+
+.hero-bg-decoration {
+  position: absolute;
+
+  width: 170px;
+  height: 250px;
+
+  opacity: 0.13;
+
+  pointer-events: none;
+}
+
+.hero-bg-left {
+  left: -15px;
+  top: 15%;
+
+  transform: rotate(-20deg);
+}
+
+.hero-bg-right {
+  right: -15px;
+  bottom: 15%;
+
+  transform: rotate(160deg);
+}
+
+.hero-bg-decoration span {
+  position: absolute;
+
+  display: block;
+
+  width: 85px;
+  height: 32px;
+
+  border-radius: 100% 0 100% 0;
+
+  border: 1px solid var(--green);
+}
+
+.hero-bg-decoration span:nth-child(1) {
+  top: 20px;
+  left: 20px;
+
+  transform: rotate(-30deg);
+}
+
+.hero-bg-decoration span:nth-child(2) {
+  top: 80px;
+  left: 45px;
+
+  transform: rotate(20deg);
+}
+
+.hero-bg-decoration span:nth-child(3) {
+  top: 145px;
+  left: 10px;
+
+  transform: rotate(-35deg);
+}
+
+
+/* ornamento */
+
+.top-ornament {
+  width: 180px;
+
+  margin: 0 auto 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  color: var(--gold);
+}
+
+.top-ornament span {
+  height: 1px;
+  flex: 1;
+
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--gold)
+  );
+}
+
+.top-ornament span:last-child {
+  background: linear-gradient(
+    to left,
+    transparent,
+    var(--gold)
+  );
+}
+
+.top-ornament b {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.hero-label {
+  margin-bottom: 22px;
+
+  color: var(--green);
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 4px;
+}
+
+
+/* =====================================================
+   LOGO DA CAPA
+===================================================== */
+
+.hero-logo {
+  width: min(360px, 60vw);
+
+  margin: 0 auto 20px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-logo img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  max-height: 230px;
+
+  object-fit: contain;
+
+  mix-blend-mode: multiply;
+}
+
+
+/* decoração dos nomes */
+
+.names-decoration {
+  width: min(300px, 70%);
+
+  margin: 0 auto 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  color: var(--gold);
+}
+
+.names-decoration span {
+  height: 1px;
+
+  flex: 1;
+
+  background: var(--gold);
+
+  opacity: 0.6;
+}
+
+.names-decoration b {
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 18px;
+
+  font-weight: 400;
+}
+
+
+/* NOMES */
+
+.hero-names {
+  margin: 0;
+
+  display: flex;
+
+  align-items: baseline;
+
+  justify-content: center;
+
+  gap: 18px;
+
+  white-space: nowrap;
+
+  color: var(--brown);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: clamp(48px, 7vw, 80px);
+
+  line-height: 0.95;
+
+  font-weight: 400;
+
+  letter-spacing: -1px;
+}
+
+.hero-names em {
+  color: var(--gold);
+
+  font-size: 0.65em;
+
+  font-style: normal;
+
+  font-weight: 300;
+}
+
+
+/* FRASE */
+
+.hero-message {
+  margin: 27px auto 31px;
+
+  color: rgba(75, 48, 40, 0.72);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 22px;
+
+  line-height: 1.35;
+
+  font-style: italic;
+}
+
+
+/* BOTÃO */
+
+.hero-button {
+  min-width: 215px;
+
+  padding: 15px 28px;
+
+  border: 1px solid var(--gold);
+
+  border-radius: 2px;
+
+  background: var(--terracotta);
+
+  color: white;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 23px;
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 2px;
+
+  text-transform: uppercase;
+
+  transition: 0.3s ease;
+}
+
+.hero-button:hover {
+  background: var(--brown);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 30px rgba(75, 48, 40, 0.15);
+}
+
+.hero-button b {
+  font-size: 18px;
+
+  font-weight: 300;
+}
+
+
+/* ornamento inferior */
+
+.hero-bottom-ornament {
+  width: 160px;
+
+  margin: 30px auto 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  color: var(--gold);
+}
+
+.hero-bottom-ornament span {
+  height: 1px;
+
+  flex: 1;
+
+  background: var(--gold);
+
+  opacity: 0.55;
+}
+
+.hero-scroll {
+  margin: 20px auto 0;
+
+  color: var(--green);
+}
+
+
+/* =====================================================
+   INTRO
+===================================================== */
+
+.intro-section {
+  max-width: 850px;
+
+  margin: auto;
+
+  padding: 115px 25px 105px;
+
+  text-align: center;
+}
+
+.tiny-ornament {
+  margin-bottom: 20px;
+
+  color: var(--gold);
+
+  font-size: 15px;
+}
+
+.section-label {
+  margin-bottom: 12px;
+
+  color: var(--terracotta);
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 3px;
+}
+
+.intro-section h2,
+.section-heading h2 {
+  color: var(--brown);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: clamp(40px, 5vw, 59px);
+
+  line-height: 1;
+
+  font-weight: 400;
+}
+
+.section-line {
+  width: 160px;
+
+  margin: 25px auto;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: var(--gold);
+}
+
+.section-line span {
+  height: 1px;
+
+  flex: 1;
+
+  background: var(--gold);
+
+  opacity: 0.55;
+}
+
+.section-line b {
+  font-size: 12px;
+
+  font-weight: 400;
+}
+
+.intro-text {
+  max-width: 680px;
+
+  margin: 0 auto 14px;
+
+  color: rgba(75, 48, 40, 0.68);
+
+  font-size: 13px;
+
+  line-height: 1.9;
+
+  font-weight: 300;
+}
+
+
+/* =====================================================
+   PARTICIPAÇÃO
+===================================================== */
+
+.participation-section {
+  padding: 110px 25px;
+
+  background: var(--cream-light);
+
+  border-top: 1px solid rgba(75, 48, 40, 0.07);
+}
+
+.section-heading {
+  max-width: 750px;
+
+  margin: 0 auto 55px;
+
+  text-align: center;
+}
+
+.section-heading > p:last-child {
+  margin-top: 18px;
+
+  color: rgba(75, 48, 40, 0.65);
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+.participation-grid {
+  max-width: 950px;
+
+  margin: auto;
+
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 25px;
+}
+
+.participation-card {
+  padding: 48px 35px;
+
+  text-align: center;
+
+  background: #fffdf9;
+
+  border: 1px solid rgba(75, 48, 40, 0.14);
+
+  transition: 0.3s ease;
+}
+
+.participation-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 20px 55px rgba(75, 48, 40, 0.08);
+}
+
+.card-icon {
+  width: 60px;
+  height: 60px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(178, 138, 77, 0.4);
+
+  color: var(--terracotta);
+
+  background: rgba(178, 138, 77, 0.06);
+}
+
+.card-number {
+  margin-bottom: 5px;
+
+  color: var(--gold) !important;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 13px !important;
+
+  letter-spacing: 2px;
+}
+
+.participation-card h3 {
+  color: var(--brown);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 29px;
+
+  font-weight: 500;
+}
+
+.card-description {
+  max-width: 410px;
+
+  margin: 13px auto 25px;
+
+  color: rgba(75, 48, 40, 0.62);
+
+  font-size: 12px;
+
+  line-height: 1.8;
+}
+
+.outline-button,
+.gallery-button {
+  padding: 13px 21px;
+
+  border: 1px solid var(--brown);
+
+  background: transparent;
+
+  color: var(--brown);
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+
+  transition: 0.25s ease;
+}
+
+.outline-button:hover,
+.gallery-button:hover {
+  background: var(--brown);
+
+  color: white;
+}
+
+
+/* =====================================================
+   FORMULÁRIOS
+===================================================== */
+
+.form-wrapper {
+  max-width: 700px;
+
+  margin: 35px auto 0;
+
+  padding: 35px;
+
+  background: white;
+
+  border: 1px solid rgba(75, 48, 40, 0.13);
+
+  box-shadow:
+    0 20px 55px rgba(75, 48, 40, 0.07);
+}
+
+.form-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding-bottom: 22px;
+
+  margin-bottom: 25px;
+
+  border-bottom: 1px solid rgba(75, 48, 40, 0.1);
+}
+
+.form-icon {
+  width: 45px;
+  height: 45px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: var(--terracotta);
+
+  background: rgba(169, 93, 73, 0.06);
+
+  border: 1px solid rgba(169, 93, 73, 0.2);
+}
+
+.form-header h3 {
+  color: var(--brown);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 26px;
+
+  font-weight: 500;
+}
+
+.form-header p {
+  margin-top: 3px;
+
+  color: rgba(75, 48, 40, 0.55);
+
+  font-size: 11px;
+}
+
+form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 19px;
+}
+
+form label {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  color: var(--brown);
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+}
+
+input,
+textarea {
+  width: 100%;
+
+  padding: 13px 14px;
+
+  outline: none;
+
+  border: 1px solid rgba(75, 48, 40, 0.18);
+
+  background: #fbf9f5;
+
+  color: var(--brown);
+
+  font-size: 12px;
+
+  font-weight: 400;
+
+  text-transform: none;
+
+  letter-spacing: 0;
+
+  transition: 0.2s ease;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--terracotta);
+}
+
+textarea {
+  resize: vertical;
+}
+
+.file-input {
+  min-height: 80px;
+
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  padding: 15px;
+
+  border: 1px dashed rgba(75, 48, 40, 0.28);
+
+  background: #fbf9f5;
+
+  color: rgba(75, 48, 40, 0.65);
+
+  font-size: 12px;
+
+  text-transform: none;
+
+  letter-spacing: 0;
+}
+
+.file-input input {
+  position: absolute;
+
+  inset: 0;
+
+  opacity: 0;
+
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 8px;
+}
+
+.cancel-button {
+  padding: 12px 18px;
+
+  border: 1px solid rgba(75, 48, 40, 0.2);
+
+  background: transparent;
+
+  color: var(--brown);
+
+  font-size: 10px;
+}
+
+.primary-button {
+  padding: 12px 20px;
+
+  border: 1px solid var(--brown);
+
+  background: var(--brown);
+
+  color: white;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+}
+
+
+/* =====================================================
+   GALERIA
+===================================================== */
+
+.gallery-section {
+  padding: 110px 25px;
+
+  background: var(--cream-dark);
+}
+
+.gallery-grid {
+  max-width: 1000px;
+
+  margin: 0 auto 35px;
+
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 14px;
+}
+
+.gallery-card {
+  aspect-ratio: 3 / 4;
+
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  box-shadow:
+    0 8px 25px rgba(75, 48, 40, 0.08);
+}
+
+.gallery-one {
+  background: linear-gradient(
+    145deg,
+    #d6c1aa,
+    #b99d82
+  );
+}
+
+.gallery-two {
+  background: linear-gradient(
+    145deg,
+    #c6c9b8,
+    #929c87
+  );
+}
+
+.gallery-three {
+  background: linear-gradient(
+    145deg,
+    #c9ac98,
+    #98796a
+  );
+}
+
+.gallery-four {
+  background: linear-gradient(
+    145deg,
+    #b5a98e,
+    #756c59
+  );
+}
+
+.gallery-placeholder {
+  width: 54px;
+  height: 54px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,0.7);
+
+  border-radius: 50%;
+
+  color: white;
+}
+
+.gallery-button {
+  margin: 0 auto;
+
+  display: flex;
+}
+
+
+/* =====================================================
+   FINAL VERDE
+===================================================== */
+
+.final-section {
+  min-height: 650px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  padding: 120px 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #36523e 0%,
+      #243b2d 55%,
+      #18291f 100%
+    );
+
+  color: white;
+}
+
+.final-section::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 22px;
+
+  border: 1px solid rgba(209, 180, 119, 0.65);
+
+  pointer-events: none;
+}
+
+.final-section::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 31px;
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  pointer-events: none;
+}
+
+.final-content {
+  position: relative;
+
+  z-index: 2;
+
+  width: min(750px, 90%);
+
+  padding: 20px;
+}
+
+.final-ornament {
+  margin-bottom: 20px;
+
+  color: var(--gold-light);
+
+  font-size: 17px;
+}
+
+.final-label {
+  margin-bottom: 14px;
+
+  color: var(--gold-light);
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 4px;
+}
+
+.final-section h2 {
+  color: #fffaf1;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: clamp(40px, 5vw, 60px);
+
+  line-height: 1.05;
+
+  font-weight: 400;
+
+  text-shadow:
+    0 2px 15px rgba(0,0,0,0.12);
+}
+
+.final-line {
+  width: 180px;
+
+  margin: 29px auto;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  color: var(--gold-light);
+}
+
+.final-line span {
+  height: 1px;
+
+  flex: 1;
+
+  background: var(--gold-light);
+
+  opacity: 0.75;
+}
+
+.final-text {
+  max-width: 560px;
+
+  margin: 0 auto;
+
+  color: rgba(255,255,255,0.86);
+
+  font-size: 13px;
+
+  line-height: 1.9;
+
+  font-weight: 300;
+}
+
+
+/* =====================================================
+   LOGO FINAL
+===================================================== */
+
+.final-logo {
+  width: 115px;
+  height: 115px;
+
+  margin: 34px auto 14px;
+
+  padding: 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid rgba(209,180,119,0.8);
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.04);
+
+  box-shadow:
+    0 8px 35px rgba(0,0,0,0.12);
+}
+
+.final-logo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  /*
+    Mantém a logo visível no fundo verde.
+  */
+
+  filter:
+    brightness(0)
+    invert(1);
+
+  opacity: 0.95;
+}
+
+.final-names {
+  margin-top: 8px;
+
+  color: #fffaf1;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 27px;
+
+  font-style: italic;
+}
+
+.final-bottom-ornament {
+  margin-top: 23px;
+
+  color: var(--gold-light);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 29px;
+}
+
+
+/* folhas */
+
+.final-leaf {
+  position: absolute;
+
+  color: #a7b39e;
+
+  opacity: 0.14;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 160px;
+
+  pointer-events: none;
+}
+
+.final-leaf-left {
+  left: 10px;
+  bottom: 10px;
+
+  transform: rotate(-25deg);
+}
+
+.final-leaf-right {
+  right: 10px;
+  top: 10px;
+
+  transform: rotate(155deg);
+}
+
+
+/* =====================================================
+   RODAPÉ
+===================================================== */
+
+.footer {
+  min-height: 250px;
+
+  padding: 55px 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  background: #132119;
+
+  color: white;
+}
+
+.footer-inner {
+  width: min(500px, 100%);
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+}
+
+
+/*
+   Caixa clara para a logo.
+   Isso resolve o problema da logo ficar
+   praticamente invisível no rodapé.
+*/
+
+.footer-logo-box {
+  width: 100px;
+  height: 100px;
+
+  margin-bottom: 20px;
+
+  padding: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--cream);
+
+  border: 1px solid var(--gold);
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,0.18);
+}
+
+.footer-logo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  display: block;
+
+  /*
+     Aqui NÃO usamos invert.
+     A logo aparece com suas cores originais
+     dentro do círculo claro.
+  */
+
+  mix-blend-mode: multiply;
+}
+
+.footer-line {
+  width: 160px;
+
+  margin-bottom: 17px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: var(--gold-light);
+}
+
+.footer-line span {
+  height: 1px;
+
+  flex: 1;
+
+  background: var(--gold-light);
+
+  opacity: 0.7;
+}
+
+.footer-title {
+  color: #fffaf1;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 27px;
+
+  font-weight: 400;
+
+  line-height: 1.2;
+}
+
+.footer-message {
+  margin-top: 8px;
+
+  color: rgba(255,255,255,0.68);
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 17px;
+
+  font-style: italic;
+}
+
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 700px) {
+
+  .hero {
+    padding: 12px;
+  }
+
+  .hero-frame {
+    min-height: calc(100vh - 24px);
+  }
+
+  .hero-frame::before {
+    inset: 9px;
+  }
+
+  .hero-frame::after {
+    inset: 15px;
+  }
+
+  .hero-inner {
+    width: 94%;
+
+    padding: 50px 12px;
+  }
+
+  .hero-label {
+    font-size: 8px;
+
+    letter-spacing: 3px;
+  }
+
+  .hero-logo {
+    width: min(285px, 72vw);
+  }
+
+  .hero-logo img {
+    max-height: 180px;
+  }
+
+  .hero-names {
+    gap: 9px;
+
+    font-size: 42px;
+  }
+
+  .hero-names em {
+    font-size: 0.58em;
+  }
+
+  .hero-message {
+    font-size: 19px;
+  }
+
+  .hero-bg-decoration {
+    opacity: 0.07;
+  }
+
+  .participation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .participation-card {
+    padding: 40px 25px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 10px;
+  }
+
+  .form-wrapper {
+    padding: 25px 18px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions button {
+    width: 100%;
+
+    justify-content: center;
+  }
+
+  .final-section {
+    min-height: 600px;
+  }
+
+  .final-section::before {
+    inset: 13px;
+  }
+
+  .final-section::after {
+    inset: 19px;
+  }
+
+  .final-content {
+    width: 92%;
+  }
+
+  .final-section h2 {
+    font-size: 42px;
+  }
+
+  .final-text {
+    font-size: 12px;
+  }
+
+  .final-leaf {
+    font-size: 90px;
+  }
+
+  .footer {
+    min-height: 230px;
+
+    padding: 45px 20px;
+  }
+
+  .footer-logo-box {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+
+@media (max-width: 420px) {
+
+  .hero-names {
+    font-size: 34px;
+
+    gap: 7px;
+  }
+
+  .hero-logo {
+    width: 235px;
+  }
+
+  .hero-message {
+    font-size: 17px;
+  }
+
+  .hero-button {
+    min-width: 195px;
+
+    padding: 14px 20px;
+  }
+
+  .intro-section,
+  .participation-section,
+  .gallery-section {
+    padding-top: 80px;
+
+    padding-bottom: 80px;
+  }
+
+  .final-section {
+    padding-top: 95px;
+
+    padding-bottom: 95px;
+  }
+
+  .final-section h2 {
+    font-size: 37px;
+  }
+
+  .final-logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .footer-title {
+    font-size: 24px;
+  }
+}
