@@ -1190,6 +1190,103 @@ function App() {
         </div>
       )}
 
+{/* =========================
+    MODAL DE CONFIRMAÇÃO
+========================== */}
+
+{modalExclusao && (
+  <div
+    className="delete-modal"
+    onClick={() => {
+      if (!apagandoFoto && !apagandoRecado) {
+        setModalExclusao(null);
+      }
+    }}
+  >
+    <div
+      className="delete-modal-content"
+      onClick={(event) =>
+        event.stopPropagation()
+      }
+    >
+
+      <button
+        type="button"
+        className="delete-modal-close"
+        onClick={() => setModalExclusao(null)}
+        disabled={apagandoFoto || apagandoRecado}
+        aria-label="Fechar"
+      >
+        <X size={20} />
+      </button>
+
+      <div className="delete-modal-icon">
+        <Trash2 size={25} strokeWidth={1.4} />
+      </div>
+
+      <p className="section-label">
+        CONFIRMAR EXCLUSÃO
+      </p>
+
+      <h2>
+        Deseja apagar {modalExclusao.tipo === "foto"
+          ? "esta foto"
+          : "este recado"}?
+      </h2>
+
+      <p className="delete-modal-text">
+        Essa ação não poderá ser desfeita.
+      </p>
+
+      <div className="delete-modal-actions">
+
+        <button
+          type="button"
+          className="cancel-button"
+          onClick={() => setModalExclusao(null)}
+          disabled={apagandoFoto || apagandoRecado}
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          className="delete-confirm-button"
+          onClick={() => {
+            if (modalExclusao.tipo === "foto") {
+              confirmarExclusaoFoto(
+                modalExclusao.item
+              );
+            } else {
+              confirmarExclusaoRecado(
+                modalExclusao.item
+              );
+            }
+          }}
+          disabled={apagandoFoto || apagandoRecado}
+        >
+          {(apagandoFoto || apagandoRecado) ? (
+            <>
+              <LoaderCircle
+                size={16}
+                className="loading-icon"
+              />
+              Apagando...
+            </>
+          ) : (
+            <>
+              <Trash2 size={16} />
+              Apagar
+            </>
+          )}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+
     </main>
   );
 }
