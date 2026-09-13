@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
+
 import {
   Heart,
   Camera,
   Images,
   MessageCircleHeart,
   Upload,
-  Send,
-  Users,
   Sparkles,
   ChevronDown,
   Download,
   X,
-  LoaderCircle,
   Trash2,
 } from "lucide-react";
 
@@ -33,6 +31,10 @@ function App() {
   const [recadosSalvos, setRecadosSalvos] = useState([]);
 
   const [carregando, setCarregando] = useState(true);
+
+  const [browserId, setBrowserId] = useState(null);
+  const [browserToken, setBrowserToken] = useState(null);
+
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [enviandoRecado, setEnviandoRecado] = useState(false);
 
@@ -41,41 +43,126 @@ function App() {
 
   const [fotoSelecionada, setFotoSelecionada] = useState(null);
 
+  const [modalExclusao, setModalExclusao] = useState(null);
+  const [modalMensagem, setModalMensagem] = useState(null);
+  const [modalPublicacao, setModalPublicacao] = useState(null);
+
   useEffect(() => {
-    carregarDados();
+    inicializarNavegador();
   }, []);
+
+  function gerarIdentificador() {
+    if (
+      typeof window !== "undefined" &&
+      window.crypto &&
+      typeof window.crypto.randomUUID === "function"
+    ) {
+      return window.crypto.randomUUID();
+    }
+
+    return `${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}-${Math.random()
+      .toString(36)
+      .slice(2)}`;
+  }
+
+  function obterIdentidadeDoNavegador() {
+    const chaveId = "album-rosangela-lucas-browser-id";
+    const chaveToken = "album-rosangela-lucas-browser-token";
+
+    let id = localStorage.getItem(chaveId);
+    let token = localStorage.getItem(chaveToken);
+
+    if (!id) {
+      id = gerarIdentificador();
+      localStorage.setItem(chaveId, id);
+    }
+
+    if (!token) {
+      token = gerarIdentificador();
+      localStorage.setItem(chaveToken, token);
+    }
+
+    return {
+      id,
+      token,
+    };
+  }
+
+  async function inicializarNavegador() {
+    try {
+      const identidade = obterIdentidadeDoNavegador();
+
+      setBrowserId(identidade.id);
+      setBrowserToken(identidade.token);
+
+      await carregarDados();
+    } catch (error) {
+      console.error("Erro ao inicializar navegador:", error);
+
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Não foi possível acessar o álbum",
+        mensagem:
+          error?.message ||
+          "Não foi possível preparar seu acesso ao álbum.",
+      });
+
+      setCarregando(false);
+    }
+  }
+
+  async function buscarDados() {
+    const resultadoFotos = await supabase
+      .from("fotos")
+      .select(
+        "id, nome, legenda, imagem_url, created_at, browser_id"
+      )
+      .order("created_at", {
+        ascending: false,
+      });
+
+    const resultadoRecados = await supabase
+      .from("recados")
+      .select(
+        "id, nome, mensagem, created_at, browser_id"
+      )
+      .order("created_at", {
+        ascending: false,
+      });
+
+    if (resultadoFotos.error) {
+      throw resultadoFotos.error;
+    }
+
+    if (resultadoRecados.error) {
+      throw resultadoRecados.error;
+    }
+
+    return {
+      fotos: resultadoFotos.data || [],
+      recados: resultadoRecados.data || [],
+    };
+  }
 
   async function carregarDados() {
     setCarregando(true);
 
     try {
-      const [resultadoFotos, resultadoRecados] = await Promise.all([
-        supabase
-          .from("fotos")
-          .select("*")
-          .order("created_at", { ascending: false }),
+      const dados = await buscarDados();
 
-        supabase
-          .from("recados")
-          .select("*")
-          .order("created_at", { ascending: false }),
-      ]);
-
-      if (resultadoFotos.error) {
-        throw resultadoFotos.error;
-      }
-
-      if (resultadoRecados.error) {
-        throw resultadoRecados.error;
-      }
-
-      setFotos(resultadoFotos.data || []);
-      setRecadosSalvos(resultadoRecados.data || []);
+      setFotos(dados.fotos);
+      setRecadosSalvos(dados.recados);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
-      alert(
-        "Não foi possível carregar as fotos e os recados. Verifique a conexão com o Supabase."
-      );
+
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Não foi possível carregar",
+        mensagem:
+          "Não foi possível carregar as fotos e os recados. Verifique a conexão com o Supabase.",
+      });
     } finally {
       setCarregando(false);
     }
@@ -93,41 +180,122 @@ function App() {
   }
 
   function abrirFoto() {
+    if (mostrarFoto) {
+      fecharFormularios();
+      return;
+    }
+
     setMostrarFoto(true);
     setMostrarRecado(false);
+
+    setTimeout(() => {
+      const formulario =
+        document.getElementById("formulario-foto");
+
+      if (formulario) {
+        formulario.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 100);
   }
 
   function abrirRecado() {
-    setMostrarRecado(true);
+    if (mostrarRecado) {
+      fecharFormularios();
+      return;
+    }
+
     setMostrarFoto(false);
+    setMostrarRecado(true);
+
+    setTimeout(() => {
+      const formulario =
+        document.getElementById("formulario-recado");
+
+      if (formulario) {
+        formulario.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 100);
   }
 
   function fecharFormularios() {
+    if (enviandoFoto || enviandoRecado) {
+      return;
+    }
+
     setMostrarFoto(false);
     setMostrarRecado(false);
   }
 
-  async function enviarFoto(event) {
+  function enviarFoto(event) {
     event.preventDefault();
 
     if (!nomeFoto.trim()) {
-      alert("Digite seu nome.");
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Preencha seu nome",
+        mensagem:
+          "Digite seu nome antes de compartilhar a foto.",
+      });
+      return;
+    }
+
+    if (!browserId || !browserToken) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Aguarde um instante",
+        mensagem:
+          "Estamos preparando seu acesso ao álbum. Tente novamente em alguns segundos.",
+      });
       return;
     }
 
     if (!arquivoFoto) {
-      alert("Escolha uma foto para enviar.");
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Escolha uma foto",
+        mensagem:
+          "Selecione uma foto para compartilhar no álbum.",
+      });
       return;
     }
 
-    if (!arquivoFoto.type.startsWith("image/")) {
-      alert("Escolha um arquivo de imagem válido.");
+    if (
+      !arquivoFoto.type ||
+      !arquivoFoto.type.startsWith("image/")
+    ) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Arquivo inválido",
+        mensagem:
+          "Escolha um arquivo de imagem válido.",
+      });
       return;
     }
 
+    setModalPublicacao({
+      tipo: "foto",
+    });
+  }
+
+  async function confirmarPublicacaoFoto() {
+    if (enviandoFoto) {
+      return;
+    }
+
+    setModalPublicacao(null);
     setEnviandoFoto(true);
 
     try {
+      if (!arquivoFoto) {
+        throw new Error("Nenhuma foto foi selecionada.");
+      }
+
       const extensao = arquivoFoto.name.includes(".")
         ? arquivoFoto.name.split(".").pop().toLowerCase()
         : "jpg";
@@ -154,95 +322,172 @@ function App() {
       const imagemUrl = publicUrlData?.publicUrl;
 
       if (!imagemUrl) {
-        throw new Error("Não foi possível obter a URL da imagem.");
+        throw new Error(
+          "Não foi possível obter a URL da imagem."
+        );
       }
 
-      const { data, error: insertError } = await supabase
-        .from("fotos")
-        .insert({
-          nome: nomeFoto.trim(),
-          legenda: legendaFoto.trim() || null,
-          imagem_url: imagemUrl,
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      setFotos((fotosAtuais) => [data, ...fotosAtuais]);
-
-      setNomeFoto("");
-      setLegendaFoto("");
-      setArquivoFoto(null);
-
-      const inputArquivo = document.getElementById("arquivo-foto");
-
-      if (inputArquivo) {
-        inputArquivo.value = "";
-      }
-
-      setMostrarFoto(false);
-
-      alert("Foto compartilhada com sucesso! ❤️");
-    } catch (error) {
-      console.error("Erro ao enviar foto:", error);
-
-      alert(
-        `Não foi possível enviar a foto.\n\n${
-          error?.message || "Verifique as permissões do Supabase."
-        }`
-      );
-    } finally {
-      setEnviandoFoto(false);
-    }
-  }
-
-  async function enviarRecado(event) {
-    event.preventDefault();
-
-    if (!nomeRecado.trim()) {
-      alert("Digite seu nome.");
-      return;
-    }
-
-    if (!recado.trim()) {
-      alert("Escreva uma mensagem.");
-      return;
-    }
-
-    setEnviandoRecado(true);
-
-    try {
-      const { data, error } = await supabase
-        .from("recados")
-        .insert({
-          nome: nomeRecado.trim(),
-          mensagem: recado.trim(),
-        })
-        .select()
-        .single();
+      const { data: resultado, error } =
+        await supabase.rpc("adicionar_foto", {
+          p_nome: nomeFoto.trim(),
+          p_legenda: legendaFoto.trim() || null,
+          p_imagem_url: imagemUrl,
+          p_browser_id: browserId,
+          p_browser_token: browserToken,
+        });
 
       if (error) {
         throw error;
       }
 
-      setRecadosSalvos((recadosAtuais) => [data, ...recadosAtuais]);
+      const fotoNova = Array.isArray(resultado)
+        ? resultado[0]
+        : resultado;
+
+      if (!fotoNova) {
+        throw new Error(
+          "A foto foi enviada, mas o álbum não retornou os dados da nova foto."
+        );
+      }
+
+      setFotos((fotosAtuais) => [
+        fotoNova,
+        ...fotosAtuais,
+      ]);
+
+      setNomeFoto("");
+      setLegendaFoto("");
+      setArquivoFoto(null);
+
+      const formulario =
+        document.getElementById("formulario-foto");
+
+      const form = formulario?.querySelector("form");
+
+      if (form) {
+        form.reset();
+      }
+
+      setMostrarFoto(false);
+
+      setModalMensagem({
+        tipo: "sucesso",
+        titulo: "Foto compartilhada!",
+        mensagem:
+          "Sua foto foi adicionada ao álbum e agora faz parte dessa história.",
+      });
+    } catch (error) {
+      console.error("Erro ao enviar foto:", error);
+
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Não foi possível enviar",
+        mensagem:
+          error?.message ||
+          "Não foi possível compartilhar sua foto. Tente novamente.",
+      });
+    } finally {
+      setEnviandoFoto(false);
+    }
+  }
+
+  function enviarRecado(event) {
+    event.preventDefault();
+
+    if (!nomeRecado.trim()) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Preencha seu nome",
+        mensagem:
+          "Digite seu nome antes de enviar o recado.",
+      });
+      return;
+    }
+
+    if (!browserId || !browserToken) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Aguarde um instante",
+        mensagem:
+          "Estamos preparando seu acesso ao álbum. Tente novamente em alguns segundos.",
+      });
+      return;
+    }
+
+    if (!recado.trim()) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Escreva seu recado",
+        mensagem:
+          "Digite uma mensagem antes de enviar.",
+      });
+      return;
+    }
+
+    setModalPublicacao({
+      tipo: "recado",
+    });
+  }
+
+  async function confirmarPublicacaoRecado() {
+    if (enviandoRecado) {
+      return;
+    }
+
+    setModalPublicacao(null);
+    setEnviandoRecado(true);
+
+    try {
+      const nome = nomeRecado.trim();
+      const mensagem = recado.trim();
+
+      const { data: resultado, error } =
+        await supabase.rpc("adicionar_recado", {
+          p_nome: nome,
+          p_mensagem: mensagem,
+          p_browser_id: browserId,
+          p_browser_token: browserToken,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const recadoNovo = Array.isArray(resultado)
+        ? resultado[0]
+        : resultado;
+
+      if (!recadoNovo) {
+        throw new Error(
+          "O recado foi enviado, mas não foi possível atualizar a lista."
+        );
+      }
+
+      setRecadosSalvos((recadosAtuais) => [
+        recadoNovo,
+        ...recadosAtuais,
+      ]);
 
       setNomeRecado("");
       setRecado("");
       setMostrarRecado(false);
 
-      alert("Recado enviado com carinho! ❤️");
+      setModalMensagem({
+        tipo: "sucesso",
+        titulo: "Recado enviado!",
+        mensagem:
+          "Seu recado foi registrado e agora faz parte desse momento especial.",
+      });
     } catch (error) {
       console.error("Erro ao enviar recado:", error);
 
-      alert(
-        `Não foi possível salvar o recado.\n\n${
-          error?.message || "Verifique as permissões do Supabase."
-        }`
-      );
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Não foi possível enviar",
+        mensagem:
+          error?.message ||
+          "Não foi possível enviar seu recado. Tente novamente.",
+      });
     } finally {
       setEnviandoRecado(false);
     }
@@ -261,7 +506,9 @@ function App() {
       const resposta = await fetch(foto.imagem_url);
 
       if (!resposta.ok) {
-        throw new Error("Não foi possível baixar a imagem.");
+        throw new Error(
+          "Não foi possível baixar a imagem."
+        );
       }
 
       const blob = await resposta.blob();
@@ -274,7 +521,9 @@ function App() {
       link.download = `foto-${foto.id}.jpg`;
 
       document.body.appendChild(link);
+
       link.click();
+
       link.remove();
 
       window.URL.revokeObjectURL(url);
@@ -289,131 +538,251 @@ function App() {
     }
   }
 
-  async function apagarFoto(foto) {
-    const confirmar = window.confirm(
-      "Tem certeza que deseja apagar esta foto?"
-    );
-
-    if (!confirmar) {
+  function apagarFoto(foto) {
+    if (!browserId) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Aguarde um instante",
+        mensagem:
+          "Estamos identificando este navegador. Tente novamente.",
+      });
       return;
     }
 
+    if (foto.browser_id !== browserId) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Ação não permitida",
+        mensagem:
+          "Você só pode apagar as fotos que publicou neste navegador.",
+      });
+      return;
+    }
+
+    setModalExclusao({
+      tipo: "foto",
+      item: foto,
+    });
+  }
+
+  function apagarRecado(item) {
+    if (!browserId) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Aguarde um instante",
+        mensagem:
+          "Estamos identificando este navegador. Tente novamente.",
+      });
+      return;
+    }
+
+    if (item.browser_id !== browserId) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Ação não permitida",
+        mensagem:
+          "Você só pode apagar os recados que publicou neste navegador.",
+      });
+      return;
+    }
+
+    setModalExclusao({
+      tipo: "recado",
+      item,
+    });
+  }
+
+  async function confirmarExclusaoFoto(foto) {
+    if (
+      !browserId ||
+      !browserToken ||
+      foto.browser_id !== browserId
+    ) {
+      setModalExclusao(null);
+
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Ação não permitida",
+        mensagem:
+          "Você só pode apagar as fotos que publicou neste navegador.",
+      });
+
+      return;
+    }
+
+    if (apagandoFoto !== null) {
+      return;
+    }
+
+    setModalExclusao(null);
     setApagandoFoto(foto.id);
 
     try {
-      const marcador =
-        "/storage/v1/object/public/fotos/";
+      const { data: resultado, error } =
+        await supabase.rpc("apagar_foto", {
+          p_id: foto.id,
+          p_browser_token: browserToken,
+        });
 
-      const indice = foto.imagem_url.indexOf(marcador);
+      if (error) {
+        throw error;
+      }
 
-      let caminhoArquivo = null;
-
-      if (indice !== -1) {
-        caminhoArquivo = foto.imagem_url.slice(
-          indice + marcador.length
+      if (
+        resultado === false ||
+        resultado === null ||
+        typeof resultado === "undefined"
+      ) {
+        throw new Error(
+          "Esta foto não pode ser apagada por este navegador."
         );
       }
 
-      if (caminhoArquivo) {
-        const { error: storageError } = await supabase.storage
-          .from("fotos")
-          .remove([caminhoArquivo]);
-
-        if (storageError) {
-          console.warn(
-            "Não foi possível apagar o arquivo do Storage:",
-            storageError
-          );
-        }
-      }
-
-      const { error: deleteError } = await supabase
-        .from("fotos")
-        .delete()
-        .eq("id", foto.id);
-
-      if (deleteError) {
-        throw deleteError;
-      }
-
       setFotos((fotosAtuais) =>
-        fotosAtuais.filter((item) => item.id !== foto.id)
+        fotosAtuais.filter(
+          (item) => item.id !== foto.id
+        )
       );
 
       if (fotoSelecionada?.id === foto.id) {
         setFotoSelecionada(null);
       }
 
-      alert("Foto apagada com sucesso.");
+      setModalMensagem({
+        tipo: "sucesso-exclusao",
+        titulo: "Foto apagada!",
+        mensagem:
+          "A foto foi removida do álbum com sucesso.",
+      });
     } catch (error) {
       console.error("Erro ao apagar foto:", error);
 
-      alert(
-        `Não foi possível apagar a foto.\n\n${
-          error?.message || "Verifique as permissões do Supabase."
-        }`
-      );
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Não foi possível apagar",
+        mensagem:
+          error?.message ||
+          "Não foi possível remover a foto. Tente novamente.",
+      });
     } finally {
       setApagandoFoto(null);
     }
   }
 
-  async function apagarRecado(item) {
-    const confirmar = window.confirm(
-      "Tem certeza que deseja apagar este recado?"
-    );
+  async function confirmarExclusaoRecado(item) {
+    if (
+      !browserId ||
+      !browserToken ||
+      item.browser_id !== browserId
+    ) {
+      setModalExclusao(null);
 
-    if (!confirmar) {
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Ação não permitida",
+        mensagem:
+          "Você só pode apagar os recados que publicou neste navegador.",
+      });
+
       return;
     }
 
+    if (apagandoRecado !== null) {
+      return;
+    }
+
+    setModalExclusao(null);
     setApagandoRecado(item.id);
 
     try {
-      const { error } = await supabase
-        .from("recados")
-        .delete()
-        .eq("id", item.id);
+      const { data: resultado, error } =
+        await supabase.rpc("apagar_recado", {
+          p_id: item.id,
+          p_browser_token: browserToken,
+        });
 
       if (error) {
         throw error;
       }
 
+      if (
+        resultado === false ||
+        resultado === null ||
+        typeof resultado === "undefined"
+      ) {
+        throw new Error(
+          "Este recado não pode ser apagado por este navegador."
+        );
+      }
+
       setRecadosSalvos((recadosAtuais) =>
-        recadosAtuais.filter((recadoAtual) => recadoAtual.id !== item.id)
+        recadosAtuais.filter(
+          (recadoAtual) =>
+            recadoAtual.id !== item.id
+        )
       );
 
-      alert("Recado apagado com sucesso.");
+      setModalMensagem({
+        tipo: "sucesso-exclusao",
+        titulo: "Recado apagado!",
+        mensagem:
+          "O recado foi removido do álbum com sucesso.",
+      });
     } catch (error) {
-      console.error("Erro ao apagar recado:", error);
-
-      alert(
-        `Não foi possível apagar o recado.\n\n${
-          error?.message || "Verifique as permissões do Supabase."
-        }`
+      console.error(
+        "Erro ao apagar recado:",
+        error
       );
+
+      setModalMensagem({
+        tipo: "erro",
+        titulo: "Não foi possível apagar",
+        mensagem:
+          error?.message ||
+          "Não foi possível remover o recado. Tente novamente.",
+      });
     } finally {
       setApagandoRecado(null);
     }
   }
 
+  function fecharModalMensagem() {
+    setModalMensagem(null);
+  }
+
+  if (carregando) {
+    return (
+      <main className="site">
+        <div className="loading-box">
+          <span
+            className="loading-icon"
+            aria-hidden="true"
+          >
+            ⟳
+          </span>
+
+          <span>Carregando memórias...</span>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="site">
-
-      {/* =========================
-          CAPA
-      ========================== */}
-
       <section className="hero">
         <div className="hero-frame">
           <div className="hero-inner">
-
             <div className="hero-bg-decoration hero-bg-left"></div>
             <div className="hero-bg-decoration hero-bg-right"></div>
 
             <div className="top-ornament">
               <span></span>
-              <Heart size={15} strokeWidth={1.3} />
+
+              <Heart
+                size={15}
+                strokeWidth={1.3}
+              />
+
               <span></span>
             </div>
 
@@ -429,7 +798,12 @@ function App() {
 
             <div className="names-decoration">
               <span></span>
-              <Heart size={13} strokeWidth={1.2} />
+
+              <Heart
+                size={13}
+                strokeWidth={1.2}
+              />
+
               <span></span>
             </div>
 
@@ -438,42 +812,49 @@ function App() {
             </h1>
 
             <p className="hero-message">
-              Que este espaço guarde para sempre os momentos,
-              sorrisos e palavras de carinho compartilhados
-              por todos que fazem parte da nossa história.
+              Que este espaço guarde para sempre os
+              momentos, sorrisos e palavras de carinho
+              compartilhados por todos que fazem parte
+              da nossa história.
             </p>
 
             <button
+              type="button"
               className="hero-button"
               onClick={entrarNoAlbum}
             >
-              <Images size={17} strokeWidth={1.5} />
+              <Images
+                size={17}
+                strokeWidth={1.5}
+              />
+
               <span>ENTRAR NO ÁLBUM</span>
             </button>
 
             <div className="hero-bottom-ornament">
               <span></span>
-              <Heart size={11} strokeWidth={1.2} />
+
+              <Heart
+                size={11}
+                strokeWidth={1.2}
+              />
+
               <span></span>
             </div>
 
             <div className="hero-scroll">
               <ChevronDown size={18} />
             </div>
-
           </div>
         </div>
       </section>
 
-
-      {/* =========================
-          INTRODUÇÃO
-      ========================== */}
-
       <section className="intro-section">
         <div className="tiny-ornament">
           <span></span>
+
           <Heart size={12} />
+
           <span></span>
         </div>
 
@@ -486,17 +867,13 @@ function App() {
         </h2>
 
         <p className="intro-text">
-          Este álbum foi criado para que cada pessoa querida
-          possa fazer parte das nossas lembranças.
-          Compartilhe uma foto, deixe uma mensagem e ajude
-          a tornar este momento ainda mais especial.
+          Este álbum foi criado para que cada pessoa
+          querida possa fazer parte das nossas
+          lembranças. Compartilhe uma foto, deixe
+          uma mensagem e ajude a tornar este momento
+          ainda mais especial.
         </p>
       </section>
-
-
-      {/* =========================
-          PARTICIPAÇÃO
-      ========================== */}
 
       <section
         className="participation-section"
@@ -504,7 +881,9 @@ function App() {
       >
         <div className="section-line">
           <span></span>
+
           <Heart size={13} />
+
           <span></span>
         </div>
 
@@ -519,15 +898,15 @@ function App() {
         </p>
 
         <div className="participation-grid">
-
           <article className="participation-card">
             <div className="card-icon">
-              <Camera size={27} strokeWidth={1.3} />
+              <Camera
+                size={27}
+                strokeWidth={1.3}
+              />
             </div>
 
-            <h3>
-              Compartilhar uma foto
-            </h3>
+            <h3>Compartilhar uma foto</h3>
 
             <p className="card-description">
               Registre aquele momento especial
@@ -535,6 +914,7 @@ function App() {
             </p>
 
             <button
+              type="button"
               className="outline-button"
               onClick={abrirFoto}
             >
@@ -542,7 +922,6 @@ function App() {
               Compartilhar foto
             </button>
           </article>
-
 
           <article className="participation-card">
             <div className="card-icon">
@@ -552,9 +931,7 @@ function App() {
               />
             </div>
 
-            <h3>
-              Deixar um recado
-            </h3>
+            <h3>Deixar um recado</h3>
 
             <p className="card-description">
               Escreva uma mensagem para os noivos
@@ -562,6 +939,7 @@ function App() {
             </p>
 
             <button
+              type="button"
               className="outline-button"
               onClick={abrirRecado}
             >
@@ -569,19 +947,15 @@ function App() {
               Deixar um recado
             </button>
           </article>
-
         </div>
       </section>
 
-
-      {/* =========================
-          FORMULÁRIO DE FOTO
-      ========================== */}
-
       {mostrarFoto && (
-        <section className="form-section">
+        <section
+          className="form-section"
+          id="formulario-foto"
+        >
           <div className="form-wrapper">
-
             <div className="form-header">
               <div className="form-icon">
                 <Camera size={22} />
@@ -592,14 +966,11 @@ function App() {
                   COMPARTILHE
                 </p>
 
-                <h2>
-                  Uma foto para guardar
-                </h2>
+                <h2>Uma foto para guardar</h2>
               </div>
             </div>
 
             <form onSubmit={enviarFoto}>
-
               <label htmlFor="nome-foto">
                 Seu nome
               </label>
@@ -613,6 +984,7 @@ function App() {
                 }
                 placeholder="Como podemos te identificar?"
                 maxLength={100}
+                disabled={enviandoFoto}
               />
 
               <label htmlFor="arquivo-foto">
@@ -640,6 +1012,7 @@ function App() {
                       event.target.files?.[0] || null
                     )
                   }
+                  disabled={enviandoFoto}
                 />
               </label>
 
@@ -656,10 +1029,10 @@ function App() {
                 placeholder="Se quiser, escreva uma pequena legenda..."
                 rows="4"
                 maxLength={300}
+                disabled={enviandoFoto}
               />
 
               <div className="form-actions">
-
                 <button
                   type="button"
                   className="cancel-button"
@@ -674,38 +1047,33 @@ function App() {
                   className="primary-button"
                   disabled={enviandoFoto}
                 >
-                  {enviandoFoto ? (
-                    <>
-                      <LoaderCircle
-                        size={17}
-                        className="loading-icon"
-                      />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={17} />
-                      Compartilhar foto
-                    </>
+                  {enviandoFoto && (
+                    <span
+                      className="button-status-icon button-status-loading"
+                      aria-hidden="true"
+                    >
+                      ⟳
+                    </span>
                   )}
+
+                  <span>
+                    {enviandoFoto
+                      ? "Enviando..."
+                      : "Compartilhar foto"}
+                  </span>
                 </button>
-
               </div>
-
             </form>
           </div>
         </section>
       )}
 
-
-      {/* =========================
-          FORMULÁRIO DE RECADO
-      ========================== */}
-
       {mostrarRecado && (
-        <section className="form-section">
+        <section
+          className="form-section"
+          id="formulario-recado"
+        >
           <div className="form-wrapper">
-
             <div className="form-header">
               <div className="form-icon">
                 <MessageCircleHeart size={22} />
@@ -716,14 +1084,11 @@ function App() {
                   COM CARINHO
                 </p>
 
-                <h2>
-                  Deixe uma mensagem
-                </h2>
+                <h2>Deixe uma mensagem</h2>
               </div>
             </div>
 
             <form onSubmit={enviarRecado}>
-
               <label htmlFor="nome-recado">
                 Seu nome
               </label>
@@ -737,6 +1102,7 @@ function App() {
                 }
                 placeholder="Digite seu nome"
                 maxLength={100}
+                disabled={enviandoRecado}
               />
 
               <label htmlFor="recado">
@@ -752,10 +1118,10 @@ function App() {
                 placeholder="Escreva uma mensagem para Rosangela e Lucas..."
                 rows="6"
                 maxLength={500}
+                disabled={enviandoRecado}
               />
 
               <div className="form-actions">
-
                 <button
                   type="button"
                   className="cancel-button"
@@ -770,39 +1136,33 @@ function App() {
                   className="primary-button"
                   disabled={enviandoRecado}
                 >
-                  {enviandoRecado ? (
-                    <>
-                      <LoaderCircle
-                        size={17}
-                        className="loading-icon"
-                      />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Send size={17} />
-                      Enviar recado
-                    </>
+                  {enviandoRecado && (
+                    <span
+                      className="button-status-icon button-status-loading"
+                      aria-hidden="true"
+                    >
+                      ⟳
+                    </span>
                   )}
+
+                  <span>
+                    {enviandoRecado
+                      ? "Salvando..."
+                      : "Enviar recado"}
+                  </span>
                 </button>
-
               </div>
-
             </form>
           </div>
         </section>
       )}
 
-
-      {/* =========================
-          ÁLBUM DE FOTOS
-      ========================== */}
-
       <section className="gallery-section">
-
         <div className="section-line">
           <span></span>
+
           <Heart size={13} />
+
           <span></span>
         </div>
 
@@ -815,20 +1175,12 @@ function App() {
           parte da nossa história.
         </p>
 
-        {carregando ? (
-          <div className="loading-box">
-            <LoaderCircle
-              size={28}
-              className="loading-icon"
-            />
-
-            <span>
-              Carregando memórias...
-            </span>
-          </div>
-        ) : fotos.length === 0 ? (
+        {fotos.length === 0 ? (
           <div className="gallery-placeholder">
-            <Images size={34} strokeWidth={1.2} />
+            <Images
+              size={34}
+              strokeWidth={1.2}
+            />
 
             <h3>
               Nosso álbum está esperando por você
@@ -840,6 +1192,7 @@ function App() {
             </p>
 
             <button
+              type="button"
               className="outline-button"
               onClick={abrirFoto}
             >
@@ -849,7 +1202,6 @@ function App() {
           </div>
         ) : (
           <div className="gallery-grid">
-
             {fotos.map((foto, index) => (
               <article
                 className={`gallery-card gallery-${
@@ -857,8 +1209,8 @@ function App() {
                 }`}
                 key={foto.id}
               >
-
                 <button
+                  type="button"
                   className="gallery-image-button"
                   onClick={() =>
                     abrirFotoGrande(foto)
@@ -876,7 +1228,6 @@ function App() {
                 </button>
 
                 <div className="gallery-info">
-
                   <div className="gallery-person">
                     <Heart
                       size={13}
@@ -885,13 +1236,10 @@ function App() {
                   </div>
 
                   {foto.legenda && (
-                    <p>
-                      {foto.legenda}
-                    </p>
+                    <p>{foto.legenda}</p>
                   )}
 
                   <div className="gallery-actions">
-
                     <button
                       type="button"
                       onClick={() =>
@@ -912,47 +1260,45 @@ function App() {
                       Salvar
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        apagarFoto(foto)
-                      }
-                      disabled={apagandoFoto === foto.id}
-                      className="delete-button"
-                    >
-                      {apagandoFoto === foto.id ? (
-                        <LoaderCircle
-                          size={14}
-                          className="loading-icon"
-                        />
-                      ) : (
-                        <Trash2 size={14} />
-                      )}
+                    {browserId ===
+                      foto.browser_id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          apagarFoto(foto)
+                        }
+                        disabled={
+                          apagandoFoto === foto.id
+                        }
+                        className="delete-button"
+                      >
+                        {apagandoFoto ===
+                          foto.id && (
+                          <span
+                            className="delete-status-icon button-status-loading"
+                            aria-hidden="true"
+                          >
+                            ⟳
+                          </span>
+                        )}
 
-                      Apagar
-                    </button>
-
+                        <span>Apagar</span>
+                      </button>
+                    )}
                   </div>
-
                 </div>
               </article>
             ))}
-
           </div>
         )}
-
       </section>
 
-
-      {/* =========================
-          RECADOS
-      ========================== */}
-
       <section className="messages-section">
-
         <div className="section-line">
           <span></span>
+
           <MessageCircleHeart size={13} />
+
           <span></span>
         </div>
 
@@ -965,33 +1311,21 @@ function App() {
           desse momento tão especial.
         </p>
 
-        {carregando ? (
-          <div className="loading-box">
-            <LoaderCircle
-              size={28}
-              className="loading-icon"
-            />
-
-            <span>
-              Carregando recados...
-            </span>
-          </div>
-        ) : recadosSalvos.length === 0 ? (
+        {recadosSalvos.length === 0 ? (
           <div className="messages-empty">
             <MessageCircleHeart
               size={34}
               strokeWidth={1.2}
             />
 
-            <h3>
-              Ainda não há recados
-            </h3>
+            <h3>Ainda não há recados</h3>
 
             <p>
               Deixe uma mensagem para Rosangela e Lucas.
             </p>
 
             <button
+              type="button"
               className="outline-button"
               onClick={abrirRecado}
             >
@@ -1001,13 +1335,11 @@ function App() {
           </div>
         ) : (
           <div className="messages-grid">
-
             {recadosSalvos.map((item) => (
               <article
                 className="message-card"
                 key={item.id}
               >
-
                 <div className="message-top">
                   <div className="message-icon">
                     <Heart
@@ -1017,13 +1349,9 @@ function App() {
                   </div>
 
                   <div>
-                    <h3>
-                      {item.nome}
-                    </h3>
+                    <h3>{item.nome}</h3>
 
-                    <span>
-                      Com carinho
-                    </span>
+                    <span>Com carinho</span>
                   </div>
                 </div>
 
@@ -1034,61 +1362,63 @@ function App() {
                 <div className="message-bottom">
                   <span></span>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      apagarRecado(item)
-                    }
-                    disabled={
-                      apagandoRecado === item.id
-                    }
-                    className="message-delete"
-                  >
-                    {apagandoRecado === item.id ? (
-                      <LoaderCircle
-                        size={13}
-                        className="loading-icon"
-                      />
-                    ) : (
-                      <Trash2 size={13} />
-                    )}
+                  {browserId ===
+                    item.browser_id && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        apagarRecado(item)
+                      }
+                      disabled={
+                        apagandoRecado === item.id
+                      }
+                      className="message-delete"
+                    >
+                      {apagandoRecado ===
+                        item.id && (
+                        <span
+                          className="delete-status-icon button-status-loading"
+                          aria-hidden="true"
+                        >
+                          ⟳
+                        </span>
+                      )}
 
-                    Apagar
-                  </button>
+                      <span>Apagar</span>
+                    </button>
+                  )}
                 </div>
-
               </article>
             ))}
-
           </div>
         )}
-
       </section>
 
-
-      {/* =========================
-          SEÇÃO FINAL
-      ========================== */}
-
       <section className="final-section">
-
         <div className="final-leaf final-leaf-left">
-          <Sparkles size={42} strokeWidth={0.7} />
+          <Sparkles
+            size={42}
+            strokeWidth={0.7}
+          />
         </div>
 
         <div className="final-leaf final-leaf-right">
-          <Sparkles size={42} strokeWidth={0.7} />
+          <Sparkles
+            size={42}
+            strokeWidth={0.7}
+          />
         </div>
 
         <div className="final-content">
-
           <div className="final-ornament">
             <span></span>
+
             <Heart
               size={15}
               fill="currentColor"
               strokeWidth={1}
             />
+
             <span></span>
           </div>
 
@@ -1115,31 +1445,25 @@ function App() {
 
           <div className="final-bottom-ornament">
             <span></span>
+
             <Heart size={12} />
+
             <span></span>
           </div>
-
         </div>
       </section>
-
-
-      {/* =========================
-          MODAL DA FOTO
-      ========================== */}
 
       {fotoSelecionada && (
         <div
           className="photo-modal"
           onClick={fecharFotoGrande}
         >
-
           <div
             className="photo-modal-content"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-
             <button
               type="button"
               className="modal-close"
@@ -1159,7 +1483,6 @@ function App() {
             />
 
             <div className="modal-info">
-
               <div>
                 <strong>
                   {fotoSelecionada.nome}
@@ -1182,111 +1505,280 @@ function App() {
                 <Download size={17} />
                 Salvar foto
               </button>
-
             </div>
-
           </div>
-
         </div>
       )}
 
-{/* =========================
-    MODAL DE CONFIRMAÇÃO
-========================== */}
-
-{modalExclusao && (
-  <div
-    className="delete-modal"
-    onClick={() => {
-      if (!apagandoFoto && !apagandoRecado) {
-        setModalExclusao(null);
-      }
-    }}
-  >
-    <div
-      className="delete-modal-content"
-      onClick={(event) =>
-        event.stopPropagation()
-      }
-    >
-
-      <button
-        type="button"
-        className="delete-modal-close"
-        onClick={() => setModalExclusao(null)}
-        disabled={apagandoFoto || apagandoRecado}
-        aria-label="Fechar"
-      >
-        <X size={20} />
-      </button>
-
-      <div className="delete-modal-icon">
-        <Trash2 size={25} strokeWidth={1.4} />
-      </div>
-
-      <p className="section-label">
-        CONFIRMAR EXCLUSÃO
-      </p>
-
-      <h2>
-        Deseja apagar {modalExclusao.tipo === "foto"
-          ? "esta foto"
-          : "este recado"}?
-      </h2>
-
-      <p className="delete-modal-text">
-        Essa ação não poderá ser desfeita.
-      </p>
-
-      <div className="delete-modal-actions">
-
-        <button
-          type="button"
-          className="cancel-button"
-          onClick={() => setModalExclusao(null)}
-          disabled={apagandoFoto || apagandoRecado}
-        >
-          Cancelar
-        </button>
-
-        <button
-          type="button"
-          className="delete-confirm-button"
+      {modalExclusao && (
+        <div
+          className="delete-modal"
           onClick={() => {
-            if (modalExclusao.tipo === "foto") {
-              confirmarExclusaoFoto(
-                modalExclusao.item
-              );
-            } else {
-              confirmarExclusaoRecado(
-                modalExclusao.item
-              );
+            if (
+              apagandoFoto === null &&
+              apagandoRecado === null
+            ) {
+              setModalExclusao(null);
             }
           }}
-          disabled={apagandoFoto || apagandoRecado}
         >
-          {(apagandoFoto || apagandoRecado) ? (
-            <>
-              <LoaderCircle
-                size={16}
-                className="loading-icon"
+          <div
+            className="delete-modal-content"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <button
+              type="button"
+              className="delete-modal-close"
+              onClick={() =>
+                setModalExclusao(null)
+              }
+              disabled={
+                apagandoFoto !== null ||
+                apagandoRecado !== null
+              }
+              aria-label="Fechar"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="delete-modal-icon">
+              <Trash2
+                size={25}
+                strokeWidth={1.4}
               />
-              Apagando...
-            </>
-          ) : (
-            <>
-              <Trash2 size={16} />
-              Apagar
-            </>
-          )}
-        </button>
+            </div>
 
-      </div>
+            <p className="section-label">
+              CONFIRMAR EXCLUSÃO
+            </p>
 
-    </div>
-  </div>
-)}
+            <h2>
+              Deseja apagar{" "}
+              {modalExclusao.tipo === "foto"
+                ? "esta foto"
+                : "este recado"}
+              ?
+            </h2>
 
+            <p className="delete-modal-text">
+              Essa ação não poderá ser desfeita.
+            </p>
+
+            <div className="delete-modal-actions">
+              <button
+                type="button"
+                className="cancel-button"
+                onClick={() =>
+                  setModalExclusao(null)
+                }
+                disabled={
+                  apagandoFoto !== null ||
+                  apagandoRecado !== null
+                }
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="delete-confirm-button"
+                onClick={() => {
+                  if (
+                    modalExclusao.tipo === "foto"
+                  ) {
+                    confirmarExclusaoFoto(
+                      modalExclusao.item
+                    );
+                  } else {
+                    confirmarExclusaoRecado(
+                      modalExclusao.item
+                    );
+                  }
+                }}
+                disabled={
+                  apagandoFoto !== null ||
+                  apagandoRecado !== null
+                }
+              >
+                {(apagandoFoto !== null ||
+                  apagandoRecado !== null) && (
+                  <span
+                    className="delete-confirm-icon button-status-loading"
+                    aria-hidden="true"
+                  >
+                    ⟳
+                  </span>
+                )}
+
+                <span>
+                  {apagandoFoto !== null ||
+                  apagandoRecado !== null
+                    ? "Apagando..."
+                    : "Apagar"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalPublicacao && (
+        <div
+          className="message-modal"
+          onClick={() =>
+            setModalPublicacao(null)
+          }
+        >
+          <div
+            className="message-modal-content"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <button
+              type="button"
+              className="message-modal-close"
+              onClick={() =>
+                setModalPublicacao(null)
+              }
+              aria-label="Fechar"
+            >
+              <X size={19} />
+            </button>
+
+            <div className="message-modal-icon success">
+              {modalPublicacao.tipo === "foto" ? (
+                <Camera
+                  size={25}
+                  strokeWidth={1.5}
+                />
+              ) : (
+                <MessageCircleHeart
+                  size={25}
+                  strokeWidth={1.5}
+                />
+              )}
+            </div>
+
+            <p className="section-label">
+              {modalPublicacao.tipo === "foto"
+                ? "COMPARTILHAR FOTO"
+                : "ENVIAR RECADO"}
+            </p>
+
+            <h2>
+              {modalPublicacao.tipo === "foto"
+                ? "Compartilhar esta foto?"
+                : "Enviar este recado?"}
+            </h2>
+
+            <p className="message-modal-text">
+              {modalPublicacao.tipo === "foto"
+                ? "Sua foto será adicionada ao álbum e poderá ser vista pelos convidados."
+                : "Seu recado ficará registrado no álbum para os noivos guardarem com carinho."}
+            </p>
+
+            <div className="delete-modal-actions">
+              <button
+                type="button"
+                className="cancel-button"
+                onClick={() =>
+                  setModalPublicacao(null)
+                }
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="message-modal-button"
+                onClick={() => {
+                  if (
+                    modalPublicacao.tipo === "foto"
+                  ) {
+                    confirmarPublicacaoFoto();
+                  } else {
+                    confirmarPublicacaoRecado();
+                  }
+                }}
+              >
+                {modalPublicacao.tipo === "foto"
+                  ? "COMPARTILHAR"
+                  : "ENVIAR"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalMensagem && (
+        <div
+          className="message-modal"
+          onClick={fecharModalMensagem}
+        >
+          <div
+            className="message-modal-content"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <button
+              type="button"
+              className="message-modal-close"
+              onClick={fecharModalMensagem}
+              aria-label="Fechar"
+            >
+              <X size={19} />
+            </button>
+
+            <div
+              className={`message-modal-icon ${
+                modalMensagem.tipo === "erro"
+                  ? "error"
+                  : "success"
+              }`}
+            >
+              {modalMensagem.tipo === "erro" ? (
+                <X
+                  size={25}
+                  strokeWidth={1.5}
+                />
+              ) : (
+                <Heart
+                  size={25}
+                  strokeWidth={1.5}
+                  fill="currentColor"
+                />
+              )}
+            </div>
+
+            <p className="section-label">
+              {modalMensagem.tipo === "erro"
+                ? "ATENÇÃO"
+                : modalMensagem.tipo ===
+                    "sucesso-exclusao"
+                  ? "TUDO CERTO"
+                  : "COM CARINHO"}
+            </p>
+
+            <h2>{modalMensagem.titulo}</h2>
+
+            <p className="message-modal-text">
+              {modalMensagem.mensagem}
+            </p>
+
+            <button
+              type="button"
+              className="message-modal-button"
+              onClick={fecharModalMensagem}
+            >
+              FECHAR
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

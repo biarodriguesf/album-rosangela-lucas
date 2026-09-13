@@ -1461,3 +1461,215 @@ img {
     width: 100%;
   }
 }
+
+/* =========================================
+   MODAL DE MENSAGEM
+========================================= */
+
+.message-modal {
+  position: fixed;
+  z-index: 11000;
+  inset: 0;
+
+  padding: 25px;
+
+  background: rgba(24, 41, 31, 0.78);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  animation: messageModalFadeIn 0.2s ease;
+}
+
+.message-modal-content {
+  position: relative;
+
+  width: min(430px, 100%);
+
+  padding: 42px 32px 30px;
+
+  background: var(--cream-light);
+
+  border: 1px solid rgba(178, 138, 77, 0.45);
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.3);
+
+  text-align: center;
+
+  animation: messageModalScaleIn 0.22s ease;
+}
+
+.message-modal-close {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 38px;
+  height: 38px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--brown);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.message-modal-close:hover {
+  background: rgba(75, 48, 40, 0.07);
+
+  transform: rotate(5deg);
+}
+
+.message-modal-icon {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 20px;
+
+  border: 1px solid rgba(178, 138, 77, 0.4);
+
+  border-radius: 50%;
+
+  background: var(--cream);
+
+  color: var(--green);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-modal-icon.error {
+  color: var(--terracotta);
+
+  border-color: rgba(169, 93, 73, 0.35);
+}
+
+.message-modal-content .section-label {
+  margin-bottom: 9px;
+}
+
+.message-modal-content h2 {
+  margin: 0;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 32px;
+
+  line-height: 1.15;
+
+  font-weight: 500;
+
+  color: var(--brown);
+}
+
+.message-modal-text {
+  width: min(310px, 100%);
+
+  margin: 13px auto 27px;
+
+  font-family: "Cormorant Garamond", serif;
+
+  font-size: 18px;
+
+  line-height: 1.5;
+
+  color: var(--brown);
+
+  opacity: 0.78;
+}
+
+.message-modal-button {
+  min-width: 145px;
+
+  min-height: 44px;
+
+  padding: 11px 22px;
+
+  border: 1px solid var(--green);
+
+  background: var(--green);
+
+  color: var(--white);
+
+  font-family: "Montserrat", sans-serif;
+
+  font-size: 10px;
+
+  letter-spacing: 1.4px;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.message-modal-button:hover {
+  background: var(--brown);
+
+  border-color: var(--brown);
+
+  transform: translateY(-1px);
+}
+
+@keyframes messageModalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes messageModalScaleIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(10px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .message-modal {
+    padding: 18px;
+  }
+
+  .message-modal-content {
+    padding: 40px 22px 25px;
+  }
+
+  .message-modal-content h2 {
+    font-size: 28px;
+  }
+}
